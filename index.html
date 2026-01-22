@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T.A.L.O.S. // PROJECT DATABASE</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --panel: #111;
+            --cyan: #00f3ff;
+            --amber: #ff9e00;
+            --text: #c0c0c0;
+        }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* HEADER HUD */
+        header {
+            border-bottom: 2px solid var(--cyan);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 { margin: 0; color: var(--cyan); letter-spacing: 2px; }
+        .status { color: var(--amber); font-weight: bold; animation: pulse 2s infinite; }
+
+        /* PROJECT GRID */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid #333;
+            padding: 15px;
+            transition: 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: var(--cyan);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+
+        .card h3 { margin-top: 0; color: #fff; }
+        .card a { text-decoration: none; color: inherit; display: block; height: 100%; }
+        
+        .language-tag {
+            font-size: 0.8em;
+            color: var(--bg);
+            background: var(--cyan);
+            padding: 2px 6px;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-weight: bold;
+        }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>COMMANDER // REPO_LOG</h1>
+        <span class="status">● LIVE FEED</span>
+    </header>
+
+    <div id="project-container" class="grid">
+        <p>Scanning GitHub Neural Net...</p>
+    </div>
+
+    <script>
+        // CONFIGURATION: Replace with your actual GitHub username
+        const USERNAME = 'yourusername'; 
+
+        const container = document.getElementById('project-container');
+
+        // 1. Fetch Data from GitHub API
+        fetch(`https://api.github.com/users/${USERNAME}/repos?sort=updated`)
+            .then(response => response.json())
+            .then(data => {
+                // Clear the "Scanning..." text
+                container.innerHTML = '';
+
+                // 2. Loop through each Repo
+                data.forEach(repo => {
+                    // Filter out the portfolio itself if you want
+                    if (repo.name === `${USERNAME}.github.io`) return;
+
+                    // 3. Create HTML Card for each
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    
+                    // Fallback for missing descriptions
+                    const description = repo.description ? repo.description : "No classified data available.";
+                    const lang = repo.language ? repo.language : "N/A";
+
+                    card.innerHTML = `
+                        <a href="${repo.html_url}" target="_blank">
+                            <span class="language-tag">${lang}</span>
+                            <h3>${repo.name}</h3>
+                            <p>${description}</p>
+                            <small>★ ${repo.stargazers_count} | Updated: ${new Date(repo.updated_at).toLocaleDateString()}</small>
+                        </a>
+                    `;
+
+                    // 4. Inject into DOM
+                    container.appendChild(card);
+                });
+            })
+            .catch(error => {
+                container.innerHTML = `<p style="color:red">ERROR: UPLINK FAILED. ${error}</p>`;
+            });
+    </script>
+</body>
+</html>
